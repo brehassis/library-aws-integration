@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Common/">
+    <Project Path="src/common/LibraryAwsIntegration.Shared.Core/LibraryAwsIntegration.Shared.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/">
+    <Project Path="src/components/LibraryAwsIntegration.Compute/LibraryAwsIntegration.Compute.csproj" />
+    <Project Path="src/components/LibraryAwsIntegration.Database/LibraryAwsIntegration.Database.csproj" />
+    <Project Path="src/components/LibraryAwsIntegration.Messaging/LibraryAwsIntegration.Messaging.csproj" />
+    <Project Path="src/components/LibraryAwsIntegration.Storage/LibraryAwsIntegration.Storage.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Integration/LibraryAwsIntegration.IntegrationTests/LibraryAwsIntegration.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Unit/LibraryAwsIntegration.UnitTests/LibraryAwsIntegration.UnitTests.csproj" />
+  </Folder>
+</Solution>
