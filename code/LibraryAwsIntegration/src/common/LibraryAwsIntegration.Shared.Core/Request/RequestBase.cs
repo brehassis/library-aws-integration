@@ -28,14 +28,14 @@ public abstract class RequestBase
     /// Pode representar o sistema, serviço ou aplicação
     /// consumidora da LibraryAwsIntegration.
     /// </summary>
-    public RequestSource? Source { get; init; }
+    public RequestSourceVO? Source { get; init; }
 
     /// <summary>
     /// Data e hora em que a requisição foi criada.
     /// 
     /// Utiliza UTC como padrão corporativo.
     /// </summary>
-    public RequestTimestamp Timestamp { get; init; } = RequestTimestamp.Now();
+    public RequestTimestampVO Timestamp { get; init; } = RequestTimestampVO.Now();
 }
 
 /// <summary>

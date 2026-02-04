@@ -61,7 +61,7 @@ public abstract class ResponseBase
     /// O valor é padronizado em UTC para garantir
     /// consistência, auditoria e observabilidade.
     /// </summary>
-    public ResponseTimestamp Timestamp { get; init; } = ResponseTimestamp.Now();
+    public ResponseTimestampVO Timestamp { get; init; } = ResponseTimestampVO.Now();
 }
 
 /// <summary>

@@ -11,14 +11,14 @@
 /// Este Value Object não possui semântica de segurança
 /// ou autorização.
 /// </summary>
-public sealed record RequestSource
+public sealed record RequestSourceVO
 {
     /// <summary>
     /// Identificador da origem da requisição.
     /// </summary>
     public string Value { get; }
 
-    private RequestSource(string value)
+    private RequestSourceVO(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException(
@@ -29,13 +29,13 @@ public sealed record RequestSource
     }
 
     /// <summary>
-    /// Cria uma nova instância de <see cref="RequestSource"/>.
+    /// Cria uma nova instância de <see cref="RequestSourceVO"/>.
     /// </summary>
     /// <param name="value">
     /// Nome lógico da origem da requisição
     /// (ex: api-gateway, order-service, backoffice).
     /// </param>
-    public static RequestSource Create(string value)
+    public static RequestSourceVO Create(string value)
         => new(value);
 
     /// <inheritdoc />

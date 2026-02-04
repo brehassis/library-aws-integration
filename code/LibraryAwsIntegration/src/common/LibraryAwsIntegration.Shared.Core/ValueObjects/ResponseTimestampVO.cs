@@ -1,7 +1,7 @@
 ﻿namespace LibraryAwsIntegration.Shared.Core.ValueObjects;
 
 /// <summary>
-/// Representa o instante de criação de uma requisição.
+/// Representa o instante em que uma resposta foi gerada.
 ///
 /// Encapsula um timestamp em UTC, garantindo padronização,
 /// rastreabilidade e consistência temporal entre todos os
@@ -9,36 +9,27 @@
 ///
 /// Este Value Object existe para evitar o uso direto de
 /// tipos primitivos como <see cref="DateTime"/> ou
-/// <see cref="DateTimeOffset"/> no core da arquitetura.
+/// <see cref="DateTimeOffset"/> nos contratos de resposta
+/// da arquitetura.
 /// </summary>
-public sealed record RequestTimestamp
+public sealed record ResponseTimestampVO
 {
     /// <summary>
     /// Valor do timestamp em UTC.
     /// </summary>
     public DateTimeOffset Value { get; }
 
-    private RequestTimestamp(DateTimeOffset value)
+    private ResponseTimestampVO(DateTimeOffset value)
     {
         Value = value.ToUniversalTime();
     }
 
     /// <summary>
-    /// Cria uma instância de <see cref="RequestTimestamp"/>
+    /// Cria uma instância de <see cref="ResponseTimestampVO"/>
     /// utilizando o instante atual em UTC.
     /// </summary>
-    public static RequestTimestamp Now()
+    public static ResponseTimestampVO Now()
         => new(DateTimeOffset.UtcNow);
-
-    /// <summary>
-    /// Cria uma instância de <see cref="RequestTimestamp"/>
-    /// a partir de um valor explícito.
-    /// </summary>
-    /// <param name="value">
-    /// Timestamp que será normalizado para UTC.
-    /// </param>
-    public static RequestTimestamp From(DateTimeOffset value)
-        => new(value);
 
     /// <inheritdoc />
     public override string ToString()
