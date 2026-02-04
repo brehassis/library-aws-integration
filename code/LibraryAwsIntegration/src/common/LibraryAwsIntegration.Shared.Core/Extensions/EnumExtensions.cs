@@ -1,99 +1,109 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Globalization;
-using System.Reflection;
 
 namespace LibraryAwsIntegration.Shared.Core.Extensions;
 
 /// <summary>
-/// Extensões utilitárias para manipulação segura e padronizada
-/// de enums na LibraryAwsIntegration.
-///
-/// Centraliza operações comuns como conversão, validação
-/// e leitura de metadados, evitando duplicação de lógica
-/// entre componentes.
+/// Fornece métodos de extensão para manipulação,
+/// normalização e comparação segura de datas e horários.
 /// </summary>
-public static class EnumExtensions
+/// <remarks>
+/// Centraliza regras temporais da arquitetura,
+/// garantindo padronização em UTC e evitando erros
+/// comuns relacionados a fuso horário, comparação
+/// imprecisa e uso inconsistente de tipos temporais.
+/// </remarks>
+public static class DateTimeExtensions
 {
     /// <summary>
-    /// Verifica se o valor informado está definido
-    /// no enum especificado.
+    /// Converte um <see cref="DateTime"/> para UTC,
+    /// respeitando o <see cref="DateTimeKind"/>.
     /// </summary>
-    public static bool IsDefined<TEnum>(this TEnum value)
-        where TEnum : struct, Enum
-        => Enum.IsDefined(typeof(TEnum), value);
-
-    /// <summary>
-    /// Converte o enum para sua representação inteira.
-    /// </summary>
-    public static int ToInt<TEnum>(this TEnum value)
-        where TEnum : struct, Enum
-        => Convert.ToInt32(value, CultureInfo.InvariantCulture);
-
-    /// <summary>
-    /// Retorna o nome do enum ou uma string padrão
-    /// caso o valor não esteja definido.
-    /// </summary>
-    public static string ToSafeString<TEnum>(
-        this TEnum value,
-        string fallback = "Unknown")
-        where TEnum : struct, Enum
-        => value.IsDefined() ? value.ToString() : fallback;
-
-    /// <summary>
-    /// Converte uma string para enum de forma segura.
-    /// </summary>
-    /// <typeparam name="TEnum">Tipo do enum</typeparam>
-    /// <param name="value">Valor textual</param>
-    /// <param name="ignoreCase">Ignorar case</param>
-    public static TEnum ParseOrDefault<TEnum>(
-        this string value,
-        TEnum defaultValue,
-        bool ignoreCase = true)
-        where TEnum : struct, Enum
+    /// <param name="dateTime">Data a ser convertida.</param>
+    /// <returns>
+    /// Instância de <see cref="DateTime"/> normalizada em UTC.
+    /// </returns>
+    /// <remarks>
+    /// Caso o <see cref="DateTimeKind"/> seja <c>Unspecified</c>,
+    /// o valor é tratado como UTC por convenção arquitetural.
+    /// </remarks>
+    public static DateTime ToUtc(this DateTime dateTime)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return defaultValue;
-
-        return Enum.TryParse<TEnum>(value, ignoreCase, out var result)
-            && result.IsDefined()
-            ? result
-            : defaultValue;
+        return dateTime.Kind switch
+        {
+            DateTimeKind.Utc => dateTime,
+            DateTimeKind.Local => dateTime.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
+        };
     }
 
     /// <summary>
-    /// Tenta converter uma string para enum.
+    /// Normaliza um <see cref="DateTimeOffset"/> para UTC.
     /// </summary>
-    public static bool TryParseEnum<TEnum>(
-        this string value,
-        out TEnum result,
-        bool ignoreCase = true)
-        where TEnum : struct, Enum
-    {
-        if (Enum.TryParse<TEnum>(value, ignoreCase, out result)
-            && result.IsDefined())
-            return true;
+    /// <param name="dateTimeOffset">Data a ser normalizada.</param>
+    /// <returns>
+    /// Instância de <see cref="DateTimeOffset"/> em UTC.
+    /// </returns>
+    public static DateTimeOffset ToUtc(this DateTimeOffset dateTimeOffset)
+        => dateTimeOffset.ToUniversalTime();
 
-        result = default;
-        return false;
+    /// <summary>
+    /// Verifica se a data representa um valor no passado
+    /// em relação ao instante atual em UTC.
+    /// </summary>
+    /// <param name="dateTime">Data a ser avaliada.</param>
+    /// <returns>
+    /// <c>true</c> se estiver no passado; caso contrário, <c>false</c>.
+    /// </returns>
+    public static bool IsInPast(this DateTimeOffset dateTime)
+        => dateTime.ToUniversalTime() < DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Verifica se a data representa um valor no futuro
+    /// em relação ao instante atual em UTC.
+    /// </summary>
+    /// <param name="dateTime">Data a ser avaliada.</param>
+    /// <returns>
+    /// <c>true</c> se estiver no futuro; caso contrário, <c>false</c>.
+    /// </returns>
+    public static bool IsInFuture(this DateTimeOffset dateTime)
+        => dateTime.ToUniversalTime() > DateTimeOffset.UtcNow;
+
+    /// <summary>
+    /// Compara duas datas considerando apenas precisão
+    /// de segundos.
+    /// </summary>
+    /// <param name="first">Primeira data.</param>
+    /// <param name="second">Segunda data.</param>
+    /// <returns>
+    /// <c>true</c> se forem equivalentes em segundos.
+    /// </returns>
+    /// <remarks>
+    /// Útil para integrações externas, logs e sistemas
+    /// que não preservam precisão de milissegundos.
+    /// </remarks>
+    public static bool EqualsBySecond(this DateTimeOffset first, DateTimeOffset second)
+    {
+        var a = first.ToUniversalTime();
+        var b = second.ToUniversalTime();
+
+        return a.Year == b.Year
+            && a.Month == b.Month
+            && a.Day == b.Day
+            && a.Hour == b.Hour
+            && a.Minute == b.Minute
+            && a.Second == b.Second;
     }
 
     /// <summary>
-    /// Retorna a descrição associada ao enum,
-    /// caso exista o atributo <see cref="DescriptionAttribute"/>.
+    /// Retorna o instante atual em UTC como <see cref="DateTimeOffset"/>.
     /// </summary>
-    public static string GetDescription<TEnum>(this TEnum value)
-        where TEnum : struct, Enum
-    {
-        var member = typeof(TEnum)
-            .GetMember(value.ToString());
-
-        if (member.Length == 0)
-            return value.ToString();
-
-        var attribute = member[0]
-            .GetCustomAttribute<DescriptionAttribute>();
-
-        return attribute?.Description ?? value.ToString();
-    }
+    /// <returns>
+    /// Instante atual em UTC.
+    /// </returns>
+    /// <remarks>
+    /// Deve ser preferido ao uso direto de
+    /// <see cref="DateTimeOffset.UtcNow"/> fora do Core.
+    /// </remarks>
+    public static DateTimeOffset UtcNow()
+        => DateTimeOffset.UtcNow;
 }
